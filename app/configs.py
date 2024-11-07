@@ -9,6 +9,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv("DATABASE_URL") #type: ignore
+    ASYNC_DATABASE_URL: str = os.getenv("ASYNC_DATABASE_URL") #type: ignore
 
 settings = Settings()
 

@@ -12,6 +12,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.components.accounts.endpoints import accounts_router
 from app.components.auth.endpoints import auth_router
+from app.components.posts.endpoints import posts_router
 from app.components.base.models import Base
 from app.configs import AppConfig, settings
 from app.containers import container, Container
@@ -31,12 +32,16 @@ def setup_app(
         engine = create_engine(settings.DATABASE_URL)
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         Base.metadata.create_all(bind=engine)
+        
+        await db.init_db()
         yield
+        await db.dispose()
 
     app = FastAPI(debug=config.env.debug, lifespan=lifespan)
     api_v1 = FastAPI(debug=config.env.debug)
     api_v1.include_router(accounts_router)
     api_v1.include_router(auth_router)
+    api_v1.include_router(posts_router)
     app.mount("/api/v1", api_v1)
 
     if config.env.enable_cors:

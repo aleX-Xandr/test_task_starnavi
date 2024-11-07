@@ -7,6 +7,8 @@ from app.components.accounts.repo import AccountRepository
 from app.components.accounts.service import AccountService
 from app.components.auth.repo import AuthRepository
 from app.components.auth.service import AuthService
+from app.components.posts.repo import PostRepository
+from app.components.posts.service import PostService
 from app.configs import AppConfig
 from app.constants import CONFIG_FILE
 from app.database import DB
@@ -26,10 +28,10 @@ class Container(containers.DeclarativeContainer):
         CryptContext, schemes=["bcrypt"], deprecated="auto"
     )
 
-    account_repository: providers.Provider = providers.Singleton(AccountRepository)
-    account_service: providers.Provider = providers.Singleton(
+    accounts_repository: providers.Provider = providers.Singleton(AccountRepository)
+    accounts_service: providers.Provider = providers.Singleton(
         AccountService,
-        account_repository=account_repository,
+        accounts_repository=accounts_repository,
     )
 
     auth_repository: providers.Provider = providers.Singleton(AuthRepository)
@@ -38,6 +40,12 @@ class Container(containers.DeclarativeContainer):
         config=config.provided.auth,
         auth_repository=auth_repository,
         crypt_context=crypt_context,
+    )
+
+    posts_repository: providers.Provider = providers.Singleton(PostRepository)
+    posts_service: providers.Provider = providers.Singleton(
+        PostService,
+        posts_repository=posts_repository,
     )
 
 container = Container()

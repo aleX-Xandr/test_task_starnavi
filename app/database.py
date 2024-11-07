@@ -9,7 +9,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import expression
 from sqlmodel import Field
 
-from app.components.base.models import Base
 from app.configs import DbConfig
 
 

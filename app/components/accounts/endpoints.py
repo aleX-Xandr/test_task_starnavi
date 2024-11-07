@@ -1,3 +1,5 @@
+import secrets
+
 from dependency_injector.wiring import inject, Provide
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm
@@ -21,8 +23,8 @@ class AccountsAPI:
     @inject
     def __init__(
         self,
-        account_service: AccountService = Depends(
-            Provide[Container.account_service]
+        accounts_service: AccountService = Depends(
+            Provide[Container.accounts_service]
         ),
         auth_service: AuthService = Depends(
             Provide[Container.auth_service]
@@ -31,7 +33,7 @@ class AccountsAPI:
             Provide[Container.crypt_context]
         ),
     ):
-        self._account_service = account_service
+        self._accounts_service = accounts_service
         self._auth_service = auth_service
         self._crypt_context = crypt_context
 
@@ -41,14 +43,14 @@ class AccountsAPI:
         description="Account will be created if registration data is valid"
     )
     @inject
-    async def register(
+    async def create_account(
         self,
         data: OAuth2PasswordRequestForm = Depends(),
         db_session: Callable = Depends(Provide[Container.db_session]),
     ):
-        account = Account(login=data.username)
+        account = Account(login=data.username, hex_id=secrets.token_hex(16))
         async with db_session() as tx:
-            account = await self._account_service.add_account(tx, account)
+            account = await self._accounts_service.add_account(tx, account)
             hashed_pwd = self._crypt_context.hash(data.password)
             auth = Auth(
                 account_id=account.id,

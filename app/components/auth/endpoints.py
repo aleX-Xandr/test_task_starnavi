@@ -5,7 +5,6 @@ from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from typing import Callable
 
-from app.components.auth.repo import AuthRepository
 from app.components.auth.scheme import GetTokenResponse
 from app.components.auth.service import AuthService
 from app.components.auth.utils import find_role
@@ -28,7 +27,7 @@ class AuthAPI:
         response_model=GetTokenResponse
     )
     @inject
-    async def get_token(
+    async def create_token(
         self,
         data: OAuth2PasswordRequestForm = Depends(),
         db_session: Callable = Depends(Provide[Container.db_session]),

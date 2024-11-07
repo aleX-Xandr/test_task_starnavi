@@ -1,6 +1,5 @@
 from aiocache import cached
 from dependency_injector.wiring import Provide, inject
-from fastapi import HTTPException, status
 from fastapi.params import Depends, Security
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from jose import jwt, JWTError
@@ -48,7 +47,7 @@ class Scopes(Security):
 async def _get_account_cached(
     account_id: int,
     db_session: Callable = Depends(Provide[Container.db_session]),
-    account_repo: AccountRepository = Depends(Provide[Container.account_repository]),
+    account_repo: AccountRepository = Depends(Provide[Container.accounts_repository]),
 ) -> Account | None:
     async with db_session() as tx:
         return await account_repo.get_account_by_id(tx, account_id)
@@ -119,7 +118,7 @@ def find_role(auth: Auth) -> RoleEnum:
     for _role in RolePermissionsEnum:
         if auth.scopes == _role.value:
             return RoleEnum[_role.name]
-        return RoleEnum.NEW
+        return RoleEnum.USER
 
 
 container.wire(modules=[__name__])
