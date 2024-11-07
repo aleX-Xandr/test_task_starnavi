@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.components.accounts.endpoints import accounts_router
 from app.components.auth.endpoints import auth_router
-from app.components.base.models import Base
+from app.components.base.models_accessor import get_base
 from app.configs import AppConfig, settings
 from app.containers import container, Container
 from app.database import DB
@@ -30,8 +30,11 @@ def setup_app(
         
         engine = create_engine(settings.DATABASE_URL)
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        Base.metadata.create_all(bind=engine)
+        get_base().metadata.create_all(bind=engine)
+        
+        await db.init_db()
         yield
+        await db.dispose()
 
     app = FastAPI(debug=config.env.debug, lifespan=lifespan)
     api_v1 = FastAPI(debug=config.env.debug)

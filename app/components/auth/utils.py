@@ -1,6 +1,5 @@
 from aiocache import cached
 from dependency_injector.wiring import Provide, inject
-from fastapi import HTTPException, status
 from fastapi.params import Depends, Security
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from jose import jwt, JWTError
@@ -119,7 +118,7 @@ def find_role(auth: Auth) -> RoleEnum:
     for _role in RolePermissionsEnum:
         if auth.scopes == _role.value:
             return RoleEnum[_role.name]
-        return RoleEnum.NEW
+        return RoleEnum.USER
 
 
 container.wire(modules=[__name__])

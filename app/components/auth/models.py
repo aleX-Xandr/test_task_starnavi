@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, PrimaryKeyConstraint
-from sqlmodel import SQLModel, Field
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 
 from app.components.auth.consts import RolePermissionsEnum
 from app.components.base.models import Base

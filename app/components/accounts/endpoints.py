@@ -1,3 +1,5 @@
+import secrets
+
 from dependency_injector.wiring import inject, Provide
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm
@@ -46,7 +48,7 @@ class AccountsAPI:
         data: OAuth2PasswordRequestForm = Depends(),
         db_session: Callable = Depends(Provide[Container.db_session]),
     ):
-        account = Account(login=data.username)
+        account = Account(login=data.username, hex_id=secrets.token_hex(16))
         async with db_session() as tx:
             account = await self._account_service.add_account(tx, account)
             hashed_pwd = self._crypt_context.hash(data.password)
