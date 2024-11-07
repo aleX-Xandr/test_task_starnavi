@@ -1,13 +1,10 @@
-import pytest
 import pytest_asyncio
 
-from alembic import command
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from typing import AsyncIterator, Generator
+from typing import AsyncIterator
 
 from app.containers import container
-from app.tests.fixtures import event_loop
 
 
 @pytest_asyncio.fixture

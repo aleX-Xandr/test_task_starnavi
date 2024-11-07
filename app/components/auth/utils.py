@@ -47,7 +47,7 @@ class Scopes(Security):
 async def _get_account_cached(
     account_id: int,
     db_session: Callable = Depends(Provide[Container.db_session]),
-    account_repo: AccountRepository = Depends(Provide[Container.account_repository]),
+    account_repo: AccountRepository = Depends(Provide[Container.accounts_repository]),
 ) -> Account | None:
     async with db_session() as tx:
         return await account_repo.get_account_by_id(tx, account_id)

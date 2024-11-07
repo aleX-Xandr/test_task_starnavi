@@ -1,10 +1,11 @@
 from http import HTTPStatus
-from typing import Optional
+from typing import Any, Dict, Optional
 
-from httpx import AsyncClient, Response
+from httpx import AsyncClient, ASGITransport, Response
 from pytest_asyncio import fixture
 
 from app.main import app
+from app.tests.consts import ContentTypeEnum
 
 
 class TestMixin:
@@ -17,7 +18,7 @@ class TestMixin:
         self.token = await self._get_token(f_auth.login)
 
     async def _get_token(self, login):
-        async with AsyncClient(app=app, base_url="http://testserver") as api_client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as api_client:
             resp = await api_client.post(
                 self.TOKEN_API,
                 data={
@@ -53,7 +54,8 @@ class ApiRequests:
         }
         if extra_headers:
             headers.update(extra_headers)
-        async with AsyncClient(app=app, base_url="http://testserver") as api_client:
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as api_client:
             resp = await api_client.request(
                 method=method,
                 url=url_path or self.API_ENDPOINT,
@@ -63,10 +65,24 @@ class ApiRequests:
             assert resp.status_code == expected_status_code, resp.content
             return resp
 
-    async def create(self, expected_status_code: HTTPStatus = HTTPStatus.OK, **payload):
+    async def create(
+        self, 
+        expected_status_code: HTTPStatus = HTTPStatus.OK, 
+        content_type: ContentTypeEnum = ContentTypeEnum.FORM,
+        **payload
+    ) -> Dict[Any, Any]:
+
+        if content_type == ContentTypeEnum.FORM:
+            data = payload
+            json = None
+        else:
+            data = None
+            json = payload
+
         resp = await self.call_api(
             method="POST",
-            data=payload,
+            data=data,
+            json=json,
             expected_status_code=expected_status_code
         )
         json_data = resp.json()
