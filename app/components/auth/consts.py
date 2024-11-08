@@ -7,6 +7,8 @@ class ScopeEnum(str, enum.Enum):
 
     POSTS_GET = "posts:get"
     POSTS_CREATE = "posts:create"
+    POSTS_UPDATE = "posts:update"
+    POSTS_DELETE = "posts:delete"
     
     COMMENTS_GET = "comments:get"
     COMMENTS_CREATE = "comments:create"

@@ -31,7 +31,7 @@ class AuthAPI:
         self,
         data: OAuth2PasswordRequestForm = Depends(),
         db_session: Callable = Depends(Provide[Container.db_session]),
-    ):        
+    ) -> GetTokenResponse:
         async with db_session() as tx:
             access_token, expires_in = await self._auth_service.create_token(
                 tx, data.username, data.password

@@ -26,3 +26,6 @@ class Post(Base):
     banned: bool = Column(
         Boolean, nullable=False, default=False
     )
+    auto_comment_timeout: int = Column(
+        Integer, nullable=True
+    )
