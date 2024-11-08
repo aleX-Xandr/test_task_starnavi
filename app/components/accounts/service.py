@@ -7,12 +7,12 @@ from app.components.accounts.repo import AccountRepository
 
 class AccountService:
     def __init__(self, accounts_repository: AccountRepository):
-        self._account_repository = accounts_repository
+        self._accounts_repository = accounts_repository
 
     async def add_account(self, tx: AsyncSession, account: Account) -> Account:
-        return await self._account_repository.add_account(tx, account)
+        return await self._accounts_repository.add_account(tx, account)
 
-    async def get_account_by_id(
+    async def get_account(
         self,
         tx: AsyncSession,
         account_id: Optional[int] = None,
@@ -21,6 +21,6 @@ class AccountService:
         if account_id is None and account_hex_id is None:
             return None
         
-        return await self._account_repository.get_account_by_id(
+        return await self._accounts_repository.get_account(
             tx, account_id, account_hex_id
         )

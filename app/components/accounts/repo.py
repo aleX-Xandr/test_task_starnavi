@@ -20,7 +20,7 @@ class AccountRepository:
         return account
     
     @staticmethod
-    async def get_account_by_id(
+    async def get_account(
         tx: AsyncSession, account_id: Optional[int] = None, account_hex_id: Optional[str] = None
     ) -> Account | None:
         q = select(Account)

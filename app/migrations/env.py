@@ -25,6 +25,7 @@ from app.components.base.models import Base
 from app.components.accounts.models import Account
 from app.components.auth.models import Auth
 from app.components.posts.models import Post
+from app.components.comments.models import Comment
 
 
 # Interpret the config file for Python logging.

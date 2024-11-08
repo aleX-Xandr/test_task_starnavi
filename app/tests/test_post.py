@@ -28,6 +28,12 @@ class TestPost(TestMixin):
         get_post = await api.get(post_id=post_id)
         assert get_post.get("id") == post_id, get_post
 
+        # get all posts
+        resp = await api.get(endpoint=f"/api/v1/posts")
+        posts = resp.get("posts", None)
+        assert isinstance(posts, list), resp
+        assert len(posts) > 0, resp
+
         # update post
         new_text = f.paragraph(nb_sentences=random.randint(3, 7))
         new_post = await api.update(post_id=post_id, text=new_text)
@@ -60,5 +66,3 @@ class TestPost(TestMixin):
             expected_status_code=HTTPStatus.BAD_REQUEST
         )
         assert del_post.get("error") == "Post not found", del_post
-
-        

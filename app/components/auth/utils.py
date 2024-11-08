@@ -50,7 +50,7 @@ async def _get_account_cached(
     account_repo: AccountRepository = Depends(Provide[Container.accounts_repository]),
 ) -> Account | None:
     async with db_session() as tx:
-        return await account_repo.get_account_by_id(tx, account_id)
+        return await account_repo.get_account(tx, account_id)
 
 @cached(ttl=60 * 5)  # 5 minutes ttl
 async def _get_auth_cached(

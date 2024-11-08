@@ -9,7 +9,15 @@ from app.components.accounts.service import AccountService
 from app.components.auth.consts import ScopeEnum
 from app.components.auth.utils import Scopes
 from app.components.posts.models import Post
-from app.components.posts.scheme import CreatePostRequest, DeletePostResponse, GetPostRequest, GetPostsRequest, GetPostResponse, GetPostsResponse, UpdatePostRequest
+from app.components.posts.scheme import (
+    CreatePostRequest,
+    DeletePostResponse,
+    GetPostRequest,
+    GetPostsRequest,
+    GetPostResponse,
+    GetPostsResponse,
+    UpdatePostRequest
+)
 from app.components.posts.service import PostService
 from app.containers import Container, container
 from app.exceptions import LogicError
@@ -82,18 +90,17 @@ class PostsAPI:
         account: Account = Scopes(ScopeEnum.POSTS_GET),
         db_session: Callable = Depends(Provide[Container.db_session]),
     ) -> GetPostsResponse:
-        if payload.owner_hex_id is not None:
-            async with db_session() as tx:
-                posts_owner = await self._accounts_service.get_account_by_id(
+        async with db_session() as tx:
+            if payload.owner_hex_id is not None:
+                posts_owner = await self._accounts_service.get_account(
                     tx, account_hex_id=payload.owner_hex_id
                 )
-            if posts_owner is None:
-                raise LogicError("Invalid owner id")
-        async with db_session() as tx:
+                if posts_owner is None:
+                    raise LogicError("Invalid owner id")
             posts = await self._posts_service.get_posts(tx, payload)
-        return GetPostsResponse(
-            posts = [GetPostResponse.from_model(post) for post in posts]
-        )
+            return GetPostsResponse(
+                posts = [GetPostResponse.from_model(post) for post in posts]
+            )
 
     @posts_router.put(
         "/post",
@@ -112,10 +119,10 @@ class PostsAPI:
                 tx,
                 payload.post_id
             )
-            if post is not None:
-                post.text = payload.text
-                return GetPostResponse.from_model(post)
-        raise LogicError(f"Post not found")
+            if post is None:
+                raise LogicError(f"Post not found")
+            post.text = payload.text
+            return GetPostResponse.from_model(post)
     
     @posts_router.delete(
         "/post/{post_id}",
@@ -126,16 +133,16 @@ class PostsAPI:
     async def delete_post(
         self,
         post_id: int = Path(..., title="Unique id that corresponds to post."),
-        account: Account = Scopes(ScopeEnum.POSTS_UPDATE),
+        account: Account = Scopes(ScopeEnum.POSTS_DELETE),
         db_session: Callable = Depends(Provide[Container.db_session]),
     ) -> GetPostResponse:
         async with db_session() as tx:
             post = await self._posts_service.get_post(
                 tx, post_id, account.hex_id
             )
-            if post is not None:
-                await self._posts_service.delete_post(tx, post)
-                return DeletePostResponse(status="Ok")
-        raise LogicError(f"Post not found")
+            if post is None:
+                raise LogicError(f"Post not found")
+            await self._posts_service.delete_post(tx, post)
+            return DeletePostResponse(status="Ok")
 
 container.wire(modules=[__name__])

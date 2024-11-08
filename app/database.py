@@ -10,6 +10,7 @@ from sqlalchemy.sql import expression
 from sqlmodel import Field
 
 from app.configs import DbConfig
+from app.exceptions import LogicError
 
 
 class UTCNow(expression.FunctionElement):
@@ -69,6 +70,9 @@ class DB:
         async with session:
             try:
                 yield session
+            except LogicError as e:
+                await session.rollback()
+                raise e
             except Exception:
                 await session.rollback()
                 raise

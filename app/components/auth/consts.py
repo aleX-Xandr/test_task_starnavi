@@ -12,6 +12,8 @@ class ScopeEnum(str, enum.Enum):
     
     COMMENTS_GET = "comments:get"
     COMMENTS_CREATE = "comments:create"
+    COMMENTS_UPDATE = "comments:update"
+    COMMENTS_DELETE = "comments:delete"
 
     STATISTICS_GET = "statistics:get"
     

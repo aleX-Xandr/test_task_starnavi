@@ -7,6 +7,8 @@ from app.components.accounts.repo import AccountRepository
 from app.components.accounts.service import AccountService
 from app.components.auth.repo import AuthRepository
 from app.components.auth.service import AuthService
+from app.components.comments.repo import CommentRepository
+from app.components.comments.service import CommentService
 from app.components.posts.repo import PostRepository
 from app.components.posts.service import PostService
 from app.configs import AppConfig
@@ -40,6 +42,12 @@ class Container(containers.DeclarativeContainer):
         config=config.provided.auth,
         auth_repository=auth_repository,
         crypt_context=crypt_context,
+    )
+
+    comments_repository: providers.Provider = providers.Singleton(CommentRepository)
+    comments_service: providers.Provider = providers.Singleton(
+        CommentService,
+        comments_repository=comments_repository,
     )
 
     posts_repository: providers.Provider = providers.Singleton(PostRepository)

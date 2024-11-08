@@ -18,7 +18,7 @@ class UpdatePostRequest(GetPostRequest, CreatePostRequest):
 
 
 class GetPostsRequest(BaseModel):
-    quantity: Optional[int] = Field(50, ge=1, le=100, description="Number of posts to retrieve, default is 10 if not provided.")
+    quantity: Optional[int] = Field(50, ge=1, le=100, description="Number of posts to retrieve, default is 50 if not provided.")
     owner_hex_id: Optional[str] = Field(None, pattern=r'^[a-fA-F0-9]{16}$', description="Owner's hexadecimal ID.")
     date_from: Optional[datetime] = Field(None, description="Start date for filtering posts.")
     date_to: Optional[datetime] = Field(None, description="End date for filtering posts.")
