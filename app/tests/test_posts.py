@@ -9,19 +9,19 @@ from app.tests.fixtures import f
 
 
 class PostsAPI(ApiRequests):
-    API_ENDPOINT: str = "/api/v1/posts/create"
+    API_ENDPOINT: str = "/api/v1/posts"
 
 
 @pytest.mark.asyncio
 class TestPosts(TestMixin):
-    async def test_accounts_api(self):
-        text = f.paragraph(nb_sentences=random.randint(3, 7))
-
+    async def test_posts_api(self):
         api = PostsAPI(token=self.token)
 
-        ############################
-        #  validate post creation  #
+        ##############################
+        #  validate posts receiving  #
         
-        resp = await api.create(text=text, content_type=ContentTypeEnum.JSON)
-        assert resp.get("text") == text, resp
+        resp = await api.get()
+        posts = resp.get("posts", None)
+        assert isinstance(posts, list), resp
+        assert len(posts) > 0, resp
         

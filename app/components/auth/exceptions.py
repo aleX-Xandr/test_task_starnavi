@@ -6,7 +6,7 @@ from app.exceptions import DbEntityAlreadyExists
 
 class AuthEntityAlreadyExist(DbEntityAlreadyExists):
     @property
-    def entity_name(self):
+    def entity_name(self) -> str:
         return "Auth"
 
 

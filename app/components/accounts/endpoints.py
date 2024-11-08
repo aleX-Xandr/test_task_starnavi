@@ -47,7 +47,7 @@ class AccountsAPI:
         self,
         data: OAuth2PasswordRequestForm = Depends(),
         db_session: Callable = Depends(Provide[Container.db_session]),
-    ):
+    ) -> GetAccountResponse:
         account = Account(login=data.username, hex_id=secrets.token_hex(16))
         async with db_session() as tx:
             account = await self._accounts_service.add_account(tx, account)
@@ -58,7 +58,7 @@ class AccountsAPI:
                 hashed_password=hashed_pwd
             )
             auth = await self._auth_service.add_auth(tx, auth)
-            return GetAccountResponse(created=True)
+        return GetAccountResponse(created=True)
 
 
 container.wire(modules=[__name__])

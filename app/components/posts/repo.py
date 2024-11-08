@@ -23,14 +23,17 @@ class PostRepository:
         return post
 
     @staticmethod
-    async def get_post_by_id(
+    async def get_post(
         tx: AsyncSession, 
-        post_id: Optional[int] = None, 
+        post_id: int, 
+        owner_hex_id: Optional[str] = None
     ) -> Post | None:
         q = select(Post).where(and_(
             Post.id == post_id,
             Post.banned == False
         ))
+        if owner_hex_id is not None:
+            q = q.where(Post.account_hex_id == owner_hex_id)
         raw = await tx.execute(q)
         return raw.scalar_one_or_none()
 
@@ -56,3 +59,7 @@ class PostRepository:
         q = q.order_by(desc(Post.created_at)).limit(quantity)
         raw = await tx.execute(q)
         return raw.scalars().all()
+
+    async def delete_post(self, tx: AsyncSession, post: Post) -> None:
+        await tx.delete(post)
+        await tx.flush()

@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Literal
 
 from httpx import AsyncClient, ASGITransport, Response
 from pytest_asyncio import fixture
@@ -37,15 +37,17 @@ class TestMixin:
 
 class ApiRequests:
     API_ENDPOINT: str
+    headers: Dict
 
     def __init__(self, token: str):
-        self.token = token
+        self.headers = {
+            "Authorization": f"Bearer {token}"
+        }
 
     async def call_api(
             self,
             method: str,
             expected_status_code: HTTPStatus = HTTPStatus.OK,
-            url_path: Optional[str] = None,
             extra_headers: Optional[dict] = None,
             **kwargs
     ) -> Response:
@@ -58,32 +60,100 @@ class ApiRequests:
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as api_client:
             resp = await api_client.request(
                 method=method,
-                url=url_path or self.API_ENDPOINT,
+                url=self.API_ENDPOINT,
                 headers=headers,
                 **kwargs
             )
             assert resp.status_code == expected_status_code, resp.content
             return resp
 
-    async def create(
+    async def request(
         self, 
-        expected_status_code: HTTPStatus = HTTPStatus.OK, 
-        content_type: ContentTypeEnum = ContentTypeEnum.FORM,
-        **payload
-    ) -> Dict[Any, Any]:
+        method: Literal["GET", "POST", "PUT", "DELETE"],
+        expected_status_code: HTTPStatus, 
+        content_type: ContentTypeEnum,
+        endpoint: Optional[str] = None,
+        **kwargs
+    ):
+        data = json = params = None
 
         if content_type == ContentTypeEnum.FORM:
-            data = payload
-            json = None
-        else:
-            data = None
-            json = payload
+            data = kwargs
+        elif content_type == ContentTypeEnum.JSON:
+            json = kwargs
+        else: # ContentTypeEnum.QUERY
+            params = kwargs
 
-        resp = await self.call_api(
-            method="POST",
-            data=data,
-            json=json,
-            expected_status_code=expected_status_code
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as api_client:
+            resp = await api_client.request(
+                method=method,
+                url=endpoint or self.API_ENDPOINT,
+                headers=self.headers,
+                params=params,
+                data=data,
+                json=json,
+            )
+            assert resp.status_code == expected_status_code, resp.content
+            return resp.json()
+
+    async def create(
+        self, 
+        endpoint: Optional[str] = None,
+        expected_status_code: HTTPStatus = HTTPStatus.OK, 
+        content_type: ContentTypeEnum = ContentTypeEnum.FORM,
+        **kwargs
+    ) -> Dict[Any, Any]:
+        return await self.request(
+            "POST",
+            expected_status_code,
+            content_type,
+            endpoint,
+            **kwargs
         )
-        json_data = resp.json()
-        return json_data
+        
+    async def get(
+        self, 
+        endpoint: Optional[str] = None,
+        expected_status_code: HTTPStatus = HTTPStatus.OK, 
+        content_type: ContentTypeEnum = ContentTypeEnum.QUERY,
+        **kwargs
+    ) -> Dict[Any, Any]:
+        return await self.request(
+            "GET",
+            expected_status_code,
+            content_type,
+            endpoint,
+            **kwargs
+        )
+        
+    async def update(
+        self, 
+        endpoint: Optional[str] = None,
+        expected_status_code: HTTPStatus = HTTPStatus.OK, 
+        content_type: ContentTypeEnum = ContentTypeEnum.JSON,
+        **kwargs
+    ) -> Dict[Any, Any]:
+        return await self.request(
+            "PUT",
+            expected_status_code,
+            content_type,
+            endpoint,
+            **kwargs
+        )
+        
+    async def delete(
+        self, 
+        endpoint: Optional[str] = None,
+        expected_status_code: HTTPStatus = HTTPStatus.OK, 
+        content_type: ContentTypeEnum = ContentTypeEnum.QUERY,
+        **kwargs
+    ) -> Dict[Any, Any]:
+        return await self.request(
+            "DELETE",
+            expected_status_code,
+            content_type,
+            endpoint,
+            **kwargs
+        )
+
+        
