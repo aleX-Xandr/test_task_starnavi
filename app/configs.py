@@ -1,17 +1,7 @@
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from pydantic_settings import BaseSettings
-
-import os
 
 load_dotenv()
-
-
-class Settings(BaseSettings):
-    DATABASE_URL: str = os.getenv("DATABASE_URL") #type: ignore
-    ASYNC_DATABASE_URL: str = os.getenv("ASYNC_DATABASE_URL") #type: ignore
-
-settings = Settings()
 
 
 class AuthConfig(BaseModel):
@@ -22,6 +12,7 @@ class AuthConfig(BaseModel):
 
 class DbConfig(BaseModel):
     master: str
+    master_sync: str
     master_pool_min_size: int
     master_pool_max_size: int
 

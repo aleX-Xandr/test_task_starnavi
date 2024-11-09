@@ -4,21 +4,14 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from dotenv import load_dotenv
 
-import os
-
-# Загрузка переменных окружения из .env
-load_dotenv()
-
-# Получение значения DATABASE_URL из .env
-DATABASE_URL = os.getenv("DATABASE_URL")
+from app.containers import container
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+config.set_main_option("sqlalchemy.url", container.config().db.master_sync)
 
 from app.components.base.models import Base
 

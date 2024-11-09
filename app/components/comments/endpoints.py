@@ -11,10 +11,13 @@ from app.components.auth.utils import Scopes
 from app.components.comments.models import Comment
 from app.components.comments.scheme import (
     CreateCommentRequest,
+    DailyBreakdown,
     DeleteCommentResponse,
     GetCommentRequest,
-    GetCommentsRequest,
     GetCommentResponse,
+    GetCommentsBreakdownRequest,
+    GetCommentsBreakdownResponse,
+    GetCommentsRequest,
     GetCommentsResponse,
     UpdateCommentRequest
 )
@@ -122,6 +125,38 @@ class CommentsAPI:
         return GetCommentsResponse(
             comments = [
                 GetCommentResponse.from_model(comment) for comment in comments
+            ]
+        )
+    
+    @comments_router.get(
+        "/comments-daily-breakdown",
+        response_model=GetCommentsBreakdownResponse,
+        description="Returns a amount of comments by days"
+    )
+    @inject
+    async def get_comments_daily_breakdown(
+        self,
+        payload: GetCommentsBreakdownRequest = Depends(),
+        account: Account = Scopes(ScopeEnum.STATISTICS_GET),
+        db_session: Callable = Depends(Provide[Container.db_session]),
+    ) -> GetCommentsBreakdownResponse:
+        async with db_session() as tx:
+                
+            breakdown = await self._comments_service.get_comments_breakdown(
+                tx, payload
+            )
+        return GetCommentsBreakdownResponse(
+            report = {
+                row.date.strftime("%Y-%m-%d") : DailyBreakdown(
+                    created=row.created,
+                    blocked=row.blocked
+                ) for row in breakdown
+            }
+        )
+
+        return GetCommentsResponse(
+            comments = [
+                GetCommentResponse.from_model(day) for day in breakdown
             ]
         )
 

@@ -21,17 +21,6 @@ def pg_utcnow(_, __, **___):
     return "TIMEZONE('utc', CURRENT_TIMESTAMP)"
 
 
-class DbShortBaseFields(BaseModel):
-    id: int | None = Field(
-        sa_column=Column(Integer, primary_key=True, nullable=False), 
-    )
-    created_at: datetime | None = Field(
-        sa_column=Column(
-            DateTime, default=datetime.now(timezone.utc), nullable=False
-        )
-    )
-
-
 class DB:
     def __init__(self, config: DbConfig, *, debug: bool = False):
         self._config = config

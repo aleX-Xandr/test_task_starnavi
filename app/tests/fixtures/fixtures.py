@@ -2,11 +2,13 @@ import pytest_asyncio
 import random
 import secrets
 
+from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.components.accounts.models import Account
 from app.components.auth.consts import RolePermissionsEnum
 from app.components.auth.models import Auth
+from app.components.comments.models import Comment
 from app.components.posts.models import Post
 from app.containers import container
 from app.tests.consts import PASSWORD
@@ -51,3 +53,20 @@ async def f_post(f_session: AsyncSession, f_account: Account) -> Post:
     await f_session.commit()
     await f_session.refresh(post_)
     return post_
+
+
+@pytest_asyncio.fixture
+async def f_comment(f_session: AsyncSession, f_account: Account, f_post: Post) -> Comment:
+    await f_session.refresh(f_account)
+    await f_session.refresh(f_post)
+    comment_ = Comment(
+        created_at=datetime.now() - timedelta(weeks=1),
+        account_hex_id=f_account.hex_id,
+        post_id=f_post.id,
+        text=f.paragraph(nb_sentences=random.randint(3, 7))
+    )
+    f_session.add(comment_)
+
+    await f_session.commit()
+    await f_session.refresh(comment_)
+    return comment_

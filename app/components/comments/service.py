@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 from sqlmodel.ext.asyncio.session import AsyncSession
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from app.components.comments.models import Comment
 from app.components.comments.repo import CommentRepository
-from app.components.comments.scheme import GetCommentsRequest
+from app.components.comments.scheme import GetCommentsRequest, GetCommentsBreakdownRequest
 
 
 class CommentService:
@@ -23,7 +23,7 @@ class CommentService:
         payload: GetCommentsRequest
     ) -> List[Comment]:
         if payload.date_from is not None:
-            now = datetime.now(timezone.utc)
+            now = datetime.now()
             if payload.date_from > now:
                 return []
             if payload.date_to is not None and payload.date_to < payload.date_from:
@@ -35,6 +35,24 @@ class CommentService:
             quantity=payload.quantity, 
             account_hex_id=payload.owner_hex_id, 
             date_from=payload.date_from, 
+            date_to=payload.date_to
+        )
+    
+    async def get_comments_breakdown(
+        self,
+        tx: AsyncSession,
+        payload: GetCommentsBreakdownRequest
+    ) -> List[Dict]:
+        if payload.date_from is not None:
+            now = datetime.now()
+            if payload.date_from > now:
+                return []
+            if payload.date_to is not None and payload.date_to < payload.date_from:
+                return []
+            
+        return await self._comments_repository.get_comments_breakdown(
+            tx,
+            date_from=payload.date_from,
             date_to=payload.date_to
         )
     

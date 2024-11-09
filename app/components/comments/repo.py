@@ -1,8 +1,6 @@
 from datetime import datetime
-from sqlalchemy import desc
+from sqlalchemy import desc, func, select, and_, case
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.future import select
-from sqlalchemy.sql import and_
 from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import Optional, List
 
@@ -64,6 +62,26 @@ class CommentRepository:
         raw = await tx.execute(q)
         return raw.scalars().all()
 
-    async def delete_comment(self, tx: AsyncSession, comment: Comment) -> None:
+    @staticmethod
+    async def get_comments_breakdown(
+        tx: AsyncSession,
+        date_from: Optional[datetime] = None,
+        date_to: Optional[datetime] = None
+    ) -> List:
+        q = (
+            select(
+                func.date(Comment.created_at).label("date"),
+                func.sum(case((Comment.banned == False, 1), else_=0)).label("created"),
+                func.sum(case((Comment.banned == True, 1), else_=0)).label("blocked"),
+            )
+            .where(Comment.created_at.between(date_from, date_to))
+            .group_by(func.date(Comment.created_at))
+            .order_by("date")
+        )
+        raw = await tx.execute(q)
+        return raw.scalars().all()
+
+    @staticmethod
+    async def delete_comment(tx: AsyncSession, comment: Comment) -> None:
         await tx.delete(comment)
         await tx.flush()

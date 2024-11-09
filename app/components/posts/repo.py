@@ -60,6 +60,7 @@ class PostRepository:
         raw = await tx.execute(q)
         return raw.scalars().all()
 
-    async def delete_post(self, tx: AsyncSession, post: Post) -> None:
+    @staticmethod
+    async def delete_post(tx: AsyncSession, post: Post) -> None:
         await tx.delete(post)
         await tx.flush()

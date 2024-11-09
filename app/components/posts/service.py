@@ -23,7 +23,7 @@ class PostService:
         payload: GetPostsRequest
     ) -> List[Post]:
         if payload.date_from is not None:
-            now = datetime.now(timezone.utc)
+            now = datetime.now()
             if payload.date_from > now:
                 return []
             if payload.date_to is not None and payload.date_to < payload.date_from:

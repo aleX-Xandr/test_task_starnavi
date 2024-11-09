@@ -15,10 +15,11 @@ from app.components.auth.endpoints import auth_router
 from app.components.posts.endpoints import posts_router
 from app.components.comments.endpoints import comments_router
 from app.components.base.models import Base
-from app.configs import AppConfig, settings
+from app.configs import AppConfig
 from app.containers import container, Container
 from app.database import DB
 from app.exceptions import LogicError
+from app.migrations.runner import MigrationRunner
 
 
 @inject
@@ -30,11 +31,12 @@ def setup_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         
-        engine = create_engine(settings.DATABASE_URL)
+        engine = create_engine(config.db.master)
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         Base.metadata.create_all(bind=engine)
         
         await db.init_db()
+        # await MigrationRunner().upgrade()
         yield
         await db.dispose()
 

@@ -1,5 +1,5 @@
-from datetime import datetime
-from pydantic import BaseModel, Field
+from datetime import datetime, timezone
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 
 from app.components.posts.models import Post
@@ -22,6 +22,16 @@ class GetPostsRequest(BaseModel):
     owner_hex_id: Optional[str] = Field(None, pattern=r'^[a-fA-F0-9]{16}$', description="Owner's hexadecimal ID.")
     date_from: Optional[datetime] = Field(None, description="Start date for filtering posts.")
     date_to: Optional[datetime] = Field(None, description="End date for filtering posts.")
+
+    @field_validator("date_from", "date_to", mode="before")
+    def set_utc_timezone(cls, value):
+        if value is None:
+            return value
+        if isinstance(value, str):
+            value = datetime.fromisoformat(value)
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value
 
 
 class GetPostResponse(BaseModel):
