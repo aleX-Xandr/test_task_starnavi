@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from dependency_injector.wiring import inject, Provide
 from fastapi import Depends, Path
 from fastapi_utils.cbv import cbv
@@ -22,7 +23,7 @@ from app.components.comments.scheme import (
     UpdateCommentRequest
 )
 from app.components.comments.service import CommentService
-from app.components.posts.models import Post
+from app.components.gemini.service import GeminiService
 from app.components.posts.service import PostService
 from app.containers import Container, container
 from app.exceptions import LogicError
@@ -44,9 +45,13 @@ class CommentsAPI:
         posts_service: PostService = Depends(
             Provide[Container.posts_service]
         ),
+        gemini_service: GeminiService = Depends(
+            Provide[Container.gemini_service]
+        )
     ):
         self._accounts_service = accounts_service
         self._comments_service = comments_service
+        self._gemini_service = gemini_service
         self._posts_service = posts_service
 
     @comments_router.post(
@@ -73,6 +78,17 @@ class CommentsAPI:
                 post_id=post.id,
                 text=payload.text
             )
+            result = await self._gemini_service.analyze_comment(post, comment)
+            if isinstance(result, bool):
+                comment.banned = not result
+            elif post.auto_comment_timeout is not None:
+                reply_comment = Comment(
+                    account_hex_id=post.account_hex_id,
+                    post_id=post.id,
+                    text=result,
+                    created_at=datetime.now() + timedelta(seconds=post.auto_comment_timeout)
+                )
+                await self._comments_service.add_comment(tx, reply_comment)
             comment = await self._comments_service.add_comment(tx, comment)
         return GetCommentResponse.from_model(comment)
 
@@ -131,7 +147,7 @@ class CommentsAPI:
     @comments_router.get(
         "/comments-daily-breakdown",
         response_model=GetCommentsBreakdownResponse,
-        description="Returns a amount of comments by days"
+        description="Returns a amount of created and blocked comments by days"
     )
     @inject
     async def get_comments_daily_breakdown(
@@ -173,7 +189,12 @@ class CommentsAPI:
             )
             if comment is None:
                 raise LogicError(f"Comment not found")
+            result = await self._gemini_service.analyze_text(payload.text)
+            if isinstance(result, bool):
+                comment.banned = not result
             comment.text = payload.text
+        if comment.banned:
+            raise LogicError("Post was banned!")
         return GetCommentResponse.from_model(comment)
     
     @comments_router.delete(

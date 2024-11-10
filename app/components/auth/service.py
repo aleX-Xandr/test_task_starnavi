@@ -24,7 +24,7 @@ class AuthService:
 
     async def add_auth(self, tx: AsyncSession, auth: Auth) -> Auth:
         return await self._auth_repository.add_auth(tx, auth)
-    
+
     async def get_auth(self, tx: AsyncSession, login: str) -> Auth | None:
         return await self._auth_repository.get_auth(tx, login)
 
@@ -45,10 +45,9 @@ class AuthService:
             "scopes": auth.scopes,
         }
         if expires_delta:
-            expire = datetime.now(timezone.utc) + expires_delta
+            expire = datetime.now() + expires_delta
             data["exp"] = expire
         access_token = jwt.encode(
             data, self._config.secret_key, algorithm=self._config.algorithm
         )
         return access_token, self._config.token_expiration_minutes
-

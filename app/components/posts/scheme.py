@@ -6,7 +6,8 @@ from app.components.posts.models import Post
 
 
 class CreatePostRequest(BaseModel):
-    text: str = Field(..., min_length=1, max_length=1024)
+    text: str = Field(..., min_length=1, max_length=1024, description="Text of post")
+    auto_comment_timeout: int | None = Field(None, ge=0, description="Number of seconds to wait before answer will be shown.")
 
 
 class GetPostRequest(BaseModel):

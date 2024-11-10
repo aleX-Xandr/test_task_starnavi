@@ -11,3 +11,11 @@ auth:
   secret_key: !ENV ${AUTH_SECRET_KEY}
   algorithm: 'HS256'
   token_expiration_minutes: 30
+gemini:
+  api_key: !ENV ${GEMINI_API_KEY}
+  generation_config:
+    temperature: 0.8
+    top_p: 0.95
+    top_k: 45
+    max_output_tokens: 256
+    response_mime_type: 'text/plain'

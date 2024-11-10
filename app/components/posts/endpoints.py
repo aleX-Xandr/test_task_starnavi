@@ -8,6 +8,7 @@ from app.components.accounts.models import Account
 from app.components.accounts.service import AccountService
 from app.components.auth.consts import ScopeEnum
 from app.components.auth.utils import Scopes
+from app.components.gemini.service import GeminiService
 from app.components.posts.models import Post
 from app.components.posts.scheme import (
     CreatePostRequest,
@@ -35,10 +36,14 @@ class PostsAPI:
         ),
         accounts_service: AccountService = Depends(
             Provide[Container.accounts_service]
+        ),
+        gemini_service: GeminiService = Depends(
+            Provide[Container.gemini_service]
         )
     ):
-        self._posts_service = posts_service
         self._accounts_service = accounts_service
+        self._gemini_service = gemini_service
+        self._posts_service = posts_service
 
     @posts_router.post(
         "/post",
@@ -52,9 +57,18 @@ class PostsAPI:
         account: Account = Scopes(ScopeEnum.POSTS_CREATE),
         db_session: Callable = Depends(Provide[Container.db_session]),
     ) -> GetPostResponse:
-        post = Post(account_hex_id=account.hex_id, text=payload.text)
+        post = Post(
+            account_hex_id=account.hex_id, 
+            text=payload.text, 
+            auto_comment_timeout=payload.auto_comment_timeout
+        )
+        result = await self._gemini_service.analyze_text(post.text)
+        if isinstance(result, bool):
+            post.banned = not result
         async with db_session() as tx:
             post = await self._posts_service.add_post(tx, post)
+        if post.banned:
+            raise LogicError("Post was banned!")
         return GetPostResponse.from_model(post)
 
     @posts_router.get(
@@ -121,8 +135,15 @@ class PostsAPI:
             )
             if post is None:
                 raise LogicError(f"Post not found")
+            result = await self._gemini_service.analyze_text(payload.text)
+            if isinstance(result, bool):
+                post.banned = not result
             post.text = payload.text
-            return GetPostResponse.from_model(post)
+            if payload.auto_comment_timeout is not None:
+                post.auto_comment_timeout = payload.auto_comment_timeout
+        if post.banned:
+            raise LogicError("Post was banned!")
+        return GetPostResponse.from_model(post)
     
     @posts_router.delete(
         "/post/{post_id}",

@@ -9,6 +9,7 @@ from app.components.auth.repo import AuthRepository
 from app.components.auth.service import AuthService
 from app.components.comments.repo import CommentRepository
 from app.components.comments.service import CommentService
+from app.components.gemini.service import GeminiService
 from app.components.posts.repo import PostRepository
 from app.components.posts.service import PostService
 from app.configs import AppConfig
@@ -49,6 +50,12 @@ class Container(containers.DeclarativeContainer):
         CommentService,
         comments_repository=comments_repository,
     )
+
+    gemini_service: providers.Provider = providers.Singleton(
+        GeminiService,
+        config=config.provided.gemini
+    )
+
 
     posts_repository: providers.Provider = providers.Singleton(PostRepository)
     posts_service: providers.Provider = providers.Singleton(

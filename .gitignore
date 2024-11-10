@@ -9,6 +9,9 @@ __pycache__/
 # db data
 db_data
 
+# local tests
+ignore.py
+
 # Distribution / packaging
 .Python
 build/
