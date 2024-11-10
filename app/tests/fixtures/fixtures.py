@@ -60,7 +60,7 @@ async def f_comment(f_session: AsyncSession, f_account: Account, f_post: Post) -
     await f_session.refresh(f_account)
     await f_session.refresh(f_post)
     comment_ = Comment(
-        created_at=datetime.now() - timedelta(weeks=1),
+        created_at=datetime.now() - timedelta(days=1),
         account_hex_id=f_account.hex_id,
         post_id=f_post.id,
         text=f.paragraph(nb_sentences=random.randint(3, 7))

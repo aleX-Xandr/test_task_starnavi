@@ -147,17 +147,11 @@ class CommentsAPI:
             )
         return GetCommentsBreakdownResponse(
             report = {
-                row.date.strftime("%Y-%m-%d") : DailyBreakdown(
-                    created=row.created,
-                    blocked=row.blocked
+                row["date"].strftime("%Y-%m-%d") : DailyBreakdown(
+                    created=row["created"],
+                    blocked=row["blocked"]
                 ) for row in breakdown
             }
-        )
-
-        return GetCommentsResponse(
-            comments = [
-                GetCommentResponse.from_model(day) for day in breakdown
-            ]
         )
 
     @comments_router.put(

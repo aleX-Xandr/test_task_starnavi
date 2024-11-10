@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import desc, func, select, and_, case
 from sqlalchemy.exc import IntegrityError
 from sqlmodel.ext.asyncio.session import AsyncSession
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from app.components.comments.models import Comment
 from app.exceptions import LogicError
@@ -41,8 +41,6 @@ class CommentRepository:
         post_id: int, 
         quantity: int,
         account_hex_id: Optional[str] = None, 
-        date_from: Optional[datetime] = None, 
-        date_to: Optional[datetime] = None,
     ) -> List[Comment]:
         q = select(Comment).where(and_(
             Comment.post_id == post_id,
@@ -51,12 +49,6 @@ class CommentRepository:
 
         if account_hex_id is not None:
             q = q.where(Comment.account_hex_id == account_hex_id)
-        
-        if date_from is not None:
-            q = q.where(Comment.created_at >= date_from)
-        
-        if date_to is not None:
-            q = q.where(Comment.created_at <= date_to)
 
         q = q.order_by(desc(Comment.created_at)).limit(quantity)
         raw = await tx.execute(q)
@@ -67,7 +59,7 @@ class CommentRepository:
         tx: AsyncSession,
         date_from: Optional[datetime] = None,
         date_to: Optional[datetime] = None
-    ) -> List:
+    ) -> List[Dict]:
         q = (
             select(
                 func.date(Comment.created_at).label("date"),
@@ -79,7 +71,7 @@ class CommentRepository:
             .order_by("date")
         )
         raw = await tx.execute(q)
-        return raw.scalars().all()
+        return raw.mappings().all()
 
     @staticmethod
     async def delete_comment(tx: AsyncSession, comment: Comment) -> None:

@@ -1,7 +1,7 @@
 import pytest
 import random
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from http import HTTPStatus
 
 from app.tests.base import ApiRequests, TestMixin
@@ -46,10 +46,12 @@ class TestComment(TestMixin):
         assert new_comment.get("text") == new_text, new_comment
 
         # get comment daily breakdown
+        date_to = datetime.now(timezone.utc)
+        date_from = date_to - timedelta(days = 3)
         breakdown = await api.get(
             endpoint=f"/api/v1/comments-daily-breakdown",
-            date_from="1900-01-01",
-            date_to = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            date_from=date_from.strftime("%Y-%m-%d"),
+            date_to = date_to.strftime("%Y-%m-%d")
         )
         report = breakdown.get("report")
         assert isinstance(report, dict), breakdown

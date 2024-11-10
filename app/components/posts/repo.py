@@ -42,19 +42,11 @@ class PostRepository:
         tx: AsyncSession,
         quantity: int,
         account_hex_id: Optional[str] = None, 
-        date_from: Optional[datetime] = None, 
-        date_to: Optional[datetime] = None,
     ) -> List[Post]:
         q = select(Post).where(Post.banned == False)
 
         if account_hex_id is not None:
             q = q.where(Post.account_hex_id == account_hex_id)
-        
-        if date_from is not None:
-            q = q.where(Post.created_at >= date_from)
-        
-        if date_to is not None:
-            q = q.where(Post.created_at <= date_to)
 
         q = q.order_by(desc(Post.created_at)).limit(quantity)
         raw = await tx.execute(q)

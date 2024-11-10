@@ -21,21 +21,12 @@ class CommentService:
         self, 
         tx: AsyncSession, 
         payload: GetCommentsRequest
-    ) -> List[Comment]:
-        if payload.date_from is not None:
-            now = datetime.now()
-            if payload.date_from > now:
-                return []
-            if payload.date_to is not None and payload.date_to < payload.date_from:
-                return []
-            
+    ) -> List[Comment]:            
         return await self._comments_repository.get_comments(
             tx, 
             post_id=payload.post_id, 
             quantity=payload.quantity, 
-            account_hex_id=payload.owner_hex_id, 
-            date_from=payload.date_from, 
-            date_to=payload.date_to
+            account_hex_id=payload.owner_hex_id
         )
     
     async def get_comments_breakdown(

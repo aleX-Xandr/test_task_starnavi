@@ -22,19 +22,10 @@ class PostService:
         tx: AsyncSession, 
         payload: GetPostsRequest
     ) -> List[Post]:
-        if payload.date_from is not None:
-            now = datetime.now()
-            if payload.date_from > now:
-                return []
-            if payload.date_to is not None and payload.date_to < payload.date_from:
-                return []
-            
         return await self._posts_repository.get_posts(
             tx, 
             quantity=payload.quantity, 
-            account_hex_id=payload.owner_hex_id, 
-            date_from=payload.date_from, 
-            date_to=payload.date_to
+            account_hex_id=payload.owner_hex_id
         )
     
     async def delete_post(self, tx: AsyncSession, post: Post) -> None:
