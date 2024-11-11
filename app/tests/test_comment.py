@@ -1,23 +1,24 @@
 import pytest
 import random
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 from http import HTTPStatus
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.tests.base import ApiRequests, TestMixin
+from app.components.posts.models import Post
+from app.tests.base import CommentAPI, TestMixin
 from app.tests.consts import ContentTypeEnum
 from app.tests.fixtures import f
 
 
-class CommentAPI(ApiRequests):
-    API_ENDPOINT: str = "/api/v1/comment"
-
-
 @pytest.mark.asyncio
 class TestComment(TestMixin):
-    async def test_comment_api(self, f_session, f_post, f_comment):
+    async def test_comment_api(
+        self,
+        f_session: AsyncSession,
+        f_post: Post
+    ) -> None:
         await f_session.refresh(f_post)
-        await f_session.refresh(f_comment)
 
         api = CommentAPI(token=self.token)
         text = f.paragraph(nb_sentences=random.randint(3, 7))
@@ -33,7 +34,7 @@ class TestComment(TestMixin):
         get_comment = await api.get(comment_id=comment_id)
         assert get_comment.get("id") == comment_id, get_comment
 
-        # # get all comments
+        # get all comments
         resp = await api.get(endpoint=f"/api/v1/comments", post_id=f_post.id)
         comments = resp.get("comments", None)
         assert isinstance(comments, list), resp
@@ -55,7 +56,7 @@ class TestComment(TestMixin):
         )
         report = breakdown.get("report")
         assert isinstance(report, dict), breakdown
-        assert len(report) > 0, breakdown
+        assert len(report) > 0, [date_from, date_to, breakdown]
 
         # delete comment
         del_comment = await api.delete(

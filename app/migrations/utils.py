@@ -36,7 +36,10 @@ def update_last_revision(
     :param scripts: new migrations scripts to save their revisions
     """
     alembic_config = get_alembic_config()
-    file_location = alembic_config.get_main_option("script_location") or "app/migrations"
+    file_location = (
+        alembic_config.get_main_option("script_location") 
+        or "app/migrations"
+    )
     last_revision_file = os.path.join(file_location, "last_revision")
 
     if not isinstance(scripts, (list, tuple)):

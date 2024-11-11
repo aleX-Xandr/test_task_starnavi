@@ -22,10 +22,9 @@ class EnvConfig(BaseModel):
 
 class GenerationConfig(BaseModel):
     temperature: float
-    top_p: float
-    top_k: int
-    max_output_tokens: int
-    response_mime_type: str
+    topP: float
+    topK: int
+    maxOutputTokens: int
 
 
 class GeminiConfig(BaseModel):

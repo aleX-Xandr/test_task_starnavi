@@ -3,18 +3,14 @@ import random
 
 from http import HTTPStatus
 
-from app.tests.base import ApiRequests, TestMixin
+from app.tests.base import PostAPI, TestMixin
 from app.tests.consts import ContentTypeEnum
 from app.tests.fixtures import f
 
 
-class PostAPI(ApiRequests):
-    API_ENDPOINT: str = "/api/v1/post"
-
-
 @pytest.mark.asyncio
 class TestPost(TestMixin):
-    async def test_post_api(self):
+    async def test_post_api(self) -> None:
         text = f.paragraph(nb_sentences=random.randint(3, 7))
 
         api = PostAPI(token=self.token)

@@ -14,7 +14,6 @@ config = context.config
 config.set_main_option("sqlalchemy.url", container.config().db.master_sync)
 
 from app.components.base.models import Base
-
 from app.components.accounts.models import Account
 from app.components.auth.models import Auth
 from app.components.posts.models import Post

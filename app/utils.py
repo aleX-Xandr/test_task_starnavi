@@ -31,7 +31,7 @@ def setup_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         
-        engine = create_engine(config.db.master)
+        engine = create_engine(config.db.master_sync)
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         Base.metadata.create_all(bind=engine)
         

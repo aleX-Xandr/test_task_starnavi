@@ -62,7 +62,9 @@ class PostsAPI:
             text=payload.text, 
             auto_comment_timeout=payload.auto_comment_timeout
         )
-        result = await self._gemini_service.analyze_text(post.text)
+        result, _ = await self._gemini_service.analyze_text(
+            f"POST: {post.text}"
+        )
         if isinstance(result, bool):
             post.banned = not result
         async with db_session() as tx:
@@ -135,13 +137,15 @@ class PostsAPI:
             )
             if post is None:
                 raise LogicError(f"Post not found")
-            result = await self._gemini_service.analyze_text(payload.text)
-            if isinstance(result, bool):
-                post.banned = not result
+            valid, _ = await self._gemini_service.analyze_text(
+                f"POST: {payload.text}"
+            )
+            post.banned = not valid
             post.text = payload.text
             if payload.auto_comment_timeout is not None:
                 post.auto_comment_timeout = payload.auto_comment_timeout
-        if post.banned:
+            post.edited = True
+        if not valid:
             raise LogicError("Post was banned!")
         return GetPostResponse.from_model(post)
     

@@ -10,7 +10,7 @@ class DeepDictList(TypedDict):
 @enum.unique
 class PostStatusEnum(str, enum.Enum):
     BANNED = "BANNED"
-    NOT_BANNED = "NOT_BANNED"
+    ALLOWED = "ALLOWED"
 
 RESPOND_EXACTLY = lambda value: f"respond with exactly \"{value}\" (no additional text or symbols)"
 
@@ -21,12 +21,12 @@ TASK:
 1. **If the content contains any offensive language**, {banned}.
 2. **If the content is free of offensive language**, {not_banned}.
 
-Please analyze the following content and respond based on the instructions above.
+Please respond based on the instructions above and analyze the following content:
 """.format(
     banned=RESPOND_EXACTLY(PostStatusEnum.BANNED.value),
     not_banned=(
         "generate a relevant and thoughtful reply that aligns with context of the post and comment"
         if generate_answer else
-        RESPOND_EXACTLY(PostStatusEnum.NOT_BANNED.value)
+        RESPOND_EXACTLY(PostStatusEnum.ALLOWED.value)
     )
 )

@@ -1,6 +1,8 @@
-from datetime import datetime, timezone
+import asyncio
+
+from datetime import datetime
 from sqlmodel.ext.asyncio.session import AsyncSession
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Callable
 
 from app.components.comments.models import Comment
 from app.components.comments.repo import CommentRepository
@@ -13,6 +15,16 @@ class CommentService:
 
     async def add_comment(self, tx: AsyncSession, comment: Comment) -> Comment:
         return await self._comments_repository.add_comment(tx, comment)
+
+    async def add_delayed_comment(
+        self,
+        delay: int,
+        comment: Comment,
+        db_session: Callable
+    ) -> None:
+        await asyncio.sleep(delay)
+        async with db_session() as tx:
+            await self.add_comment(tx, comment)
 
     async def get_comment(self, tx: AsyncSession, comment_id: int, owner_hex_id: Optional[str] = None) -> Comment | None:
         return await self._comments_repository.get_comment(tx, comment_id, owner_hex_id)

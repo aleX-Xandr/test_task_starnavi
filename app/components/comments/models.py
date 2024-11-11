@@ -12,7 +12,7 @@ class Comment(Base):
         Integer, primary_key=True, index=True, nullable=False, unique=True
     )
     created_at: datetime | None = Column(
-        DateTime, default=UTCNow(), nullable=False
+        DateTime, server_default=UTCNow(), nullable=False
     )
     account_hex_id: str = Column(
         String(32), ForeignKey("accounts.hex_id"), 

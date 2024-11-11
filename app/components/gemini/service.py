@@ -1,4 +1,5 @@
 from httpx import AsyncClient
+from typing import Tuple
 
 from app.components.comments.models import Comment
 from app.components.gemini.consts import DeepDictList, PROMPT, PostStatusEnum
@@ -23,8 +24,8 @@ class GeminiService: # TODO response status and tokens limit checker
         return "https://generativelanguage.googleapis.com/v1beta/models/" \
               f"gemini-1.5-flash:generateContent?key={self._config.api_key}"
     
-    @staticmethod
     def make_payload(
+        self,
         text: str, 
         generate_answer: bool = False
     ) -> DeepDictList:
@@ -59,24 +60,29 @@ class GeminiService: # TODO response status and tokens limit checker
                     "threshold": "BLOCK_NONE"
                 },
             ],
+            "generationConfig": self._config.generation_config.model_dump(mode="json")
         }
     
     @staticmethod
-    def process_result(response: dict) -> bool | str:
+    def process_result(response: dict) -> Tuple[bool, str]:
         best_candidate = response["candidates"][0]
         analyze_result = best_candidate["content"]["parts"][0]["text"]
-        if PostStatusEnum.NOT_BANNED.value in analyze_result:
-            return True
+        if PostStatusEnum.ALLOWED.value in analyze_result:
+            return True, ""
         if PostStatusEnum.BANNED.value in analyze_result:
-            return False
-        return analyze_result
+            return False, ""
+        return True, analyze_result
 
     async def call_api(self, payload: DeepDictList) -> dict:
-        async with AsyncClient(headers=self.headers) as client:
+        async with AsyncClient(headers=self.headers, timeout=30) as client:
             response = await client.post(self.api_endpoint, json=payload)
             return response.json()
 
-    async def analyze_text(self, text: str, is_auto_comment: bool = False) -> bool | str:
+    async def analyze_text(
+        self,
+        text: str,
+        is_auto_comment: bool = False
+    ) -> Tuple[bool, str]:
         payload = self.make_payload(text, is_auto_comment)
         response = await self.call_api(payload)
         return self.process_result(response)
@@ -85,7 +91,7 @@ class GeminiService: # TODO response status and tokens limit checker
         self, 
         post: Post, 
         comment: Comment
-    ) -> bool | str:
+    ) -> Tuple[bool, str]:
         is_auto_comment = isinstance(post.auto_comment_timeout, int)
         text = f"POST: {post.text}\n\nCOMMENT: {comment.text}"
         return await self.analyze_text(text, is_auto_comment)

@@ -48,20 +48,14 @@ class ApiRequests:
             self,
             method: str,
             expected_status_code: HTTPStatus = HTTPStatus.OK,
-            extra_headers: Optional[dict] = None,
+            extra_headers: Optional[Dict] = None,
             **kwargs
     ) -> Response:
-        headers = {
-            "Authorization": f"Bearer {self.token}"
-        }
-        if extra_headers:
-            headers.update(extra_headers)
-
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as api_client:
             resp = await api_client.request(
                 method=method,
                 url=self.API_ENDPOINT,
-                headers=headers,
+                headers=self.headers,
                 **kwargs
             )
             assert resp.status_code == expected_status_code, resp.content
@@ -74,7 +68,7 @@ class ApiRequests:
         content_type: ContentTypeEnum,
         endpoint: Optional[str] = None,
         **kwargs
-    ):
+    ) -> Any:
         data = json = params = None
 
         if content_type == ContentTypeEnum.FORM:
@@ -84,7 +78,7 @@ class ApiRequests:
         else: # ContentTypeEnum.QUERY
             params = kwargs
 
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as api_client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver", timeout=30) as api_client:
             resp = await api_client.request(
                 method=method,
                 url=endpoint or self.API_ENDPOINT,
@@ -102,7 +96,7 @@ class ApiRequests:
         expected_status_code: HTTPStatus = HTTPStatus.OK, 
         content_type: ContentTypeEnum = ContentTypeEnum.FORM,
         **kwargs
-    ) -> Dict[Any, Any]:
+    ) -> Any:
         return await self.request(
             "POST",
             expected_status_code,
@@ -117,7 +111,7 @@ class ApiRequests:
         expected_status_code: HTTPStatus = HTTPStatus.OK, 
         content_type: ContentTypeEnum = ContentTypeEnum.QUERY,
         **kwargs
-    ) -> Dict[Any, Any]:
+    ) -> Any:
         return await self.request(
             "GET",
             expected_status_code,
@@ -132,7 +126,7 @@ class ApiRequests:
         expected_status_code: HTTPStatus = HTTPStatus.OK, 
         content_type: ContentTypeEnum = ContentTypeEnum.JSON,
         **kwargs
-    ) -> Dict[Any, Any]:
+    ) -> Any:
         return await self.request(
             "PUT",
             expected_status_code,
@@ -147,7 +141,7 @@ class ApiRequests:
         expected_status_code: HTTPStatus = HTTPStatus.OK, 
         content_type: ContentTypeEnum = ContentTypeEnum.QUERY,
         **kwargs
-    ) -> Dict[Any, Any]:
+    ) -> Any:
         return await self.request(
             "DELETE",
             expected_status_code,
@@ -156,4 +150,18 @@ class ApiRequests:
             **kwargs
         )
 
-        
+
+class AccountsAPI(ApiRequests):
+    API_ENDPOINT: str = "/api/v1/accounts/register"
+
+
+class AuthAPI(ApiRequests):
+    API_ENDPOINT: str = "/api/v1/auth/token"
+
+
+class CommentAPI(ApiRequests):
+    API_ENDPOINT: str = "/api/v1/comment"
+
+
+class PostAPI(ApiRequests):
+    API_ENDPOINT: str = "/api/v1/post"

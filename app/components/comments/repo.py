@@ -66,7 +66,7 @@ class CommentRepository:
                 func.sum(case((Comment.banned == False, 1), else_=0)).label("created"),
                 func.sum(case((Comment.banned == True, 1), else_=0)).label("blocked"),
             )
-            .where(Comment.created_at.between(date_from, date_to))
+            .where(Comment.created_at >= date_from, Comment.created_at <= date_to)
             .group_by(func.date(Comment.created_at))
             .order_by("date")
         )
