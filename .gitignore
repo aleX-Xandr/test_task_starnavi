@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# db data
+db_data
+
+# local tests
+ignore.py
+
 # Distribution / packaging
 .Python
 build/

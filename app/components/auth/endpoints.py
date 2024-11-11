@@ -24,7 +24,8 @@ class AuthAPI:
 
     @auth_router.post(
         "/auth/token",
-        response_model=GetTokenResponse
+        response_model=GetTokenResponse,
+        description="Generate token for registered users"
     )
     @inject
     async def create_token(

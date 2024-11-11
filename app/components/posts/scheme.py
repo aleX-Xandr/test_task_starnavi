@@ -6,11 +6,17 @@ from app.components.posts.models import Post
 
 
 class CreatePostRequest(BaseModel):
-    text: str = Field(..., min_length=1, max_length=1024)
+    text: str = Field(
+        ..., min_length=1, max_length=1024, description="Text of post"
+    )
+    auto_comment_timeout: int | None = Field(
+        None, ge=0, 
+        description="Number of seconds to wait before answer will be shown."
+    )
 
 
 class GetPostRequest(BaseModel):
-    post_id: int = Field(..., gt=0)
+    post_id: int = Field(..., gt=0, description="Unical ID of the post")
 
 
 class UpdatePostRequest(GetPostRequest, CreatePostRequest):
@@ -18,10 +24,14 @@ class UpdatePostRequest(GetPostRequest, CreatePostRequest):
 
 
 class GetPostsRequest(BaseModel):
-    quantity: Optional[int] = Field(50, ge=1, le=100, description="Number of posts to retrieve, default is 10 if not provided.")
-    owner_hex_id: Optional[str] = Field(None, pattern=r'^[a-fA-F0-9]{16}$', description="Owner's hexadecimal ID.")
-    date_from: Optional[datetime] = Field(None, description="Start date for filtering posts.")
-    date_to: Optional[datetime] = Field(None, description="End date for filtering posts.")
+    quantity: Optional[int] = Field(
+        50, ge=1, le=100, description="Number of posts to retrieve, "\
+                                    "default is 50 if not provided."
+    )
+    owner_hex_id: Optional[str] = Field(
+        None, pattern=r'^[a-fA-F0-9]{16}$',
+        description="Owner's hexadecimal ID."
+    )
 
 
 class GetPostResponse(BaseModel):

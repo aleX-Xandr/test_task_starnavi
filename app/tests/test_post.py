@@ -3,18 +3,14 @@ import random
 
 from http import HTTPStatus
 
-from app.tests.base import ApiRequests, TestMixin
+from app.tests.base import PostAPI, TestMixin
 from app.tests.consts import ContentTypeEnum
 from app.tests.fixtures import f
 
 
-class PostAPI(ApiRequests):
-    API_ENDPOINT: str = "/api/v1/post"
-
-
 @pytest.mark.asyncio
 class TestPost(TestMixin):
-    async def test_post_api(self):
+    async def test_post_api(self) -> None:
         text = f.paragraph(nb_sentences=random.randint(3, 7))
 
         api = PostAPI(token=self.token)
@@ -27,6 +23,12 @@ class TestPost(TestMixin):
         # get post
         get_post = await api.get(post_id=post_id)
         assert get_post.get("id") == post_id, get_post
+
+        # get all posts
+        resp = await api.get(endpoint=f"/api/v1/posts")
+        posts = resp.get("posts", None)
+        assert isinstance(posts, list), resp
+        assert len(posts) > 0, resp
 
         # update post
         new_text = f.paragraph(nb_sentences=random.randint(3, 7))
@@ -60,5 +62,3 @@ class TestPost(TestMixin):
             expected_status_code=HTTPStatus.BAD_REQUEST
         )
         assert del_post.get("error") == "Post not found", del_post
-
-        

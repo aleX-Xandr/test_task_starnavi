@@ -8,7 +8,7 @@ class LogicError(Exception):
 class DbEntityAlreadyExists(LogicError, ABC):
     @property
     @abstractmethod
-    def entity_name(self):
+    def entity_name(self) -> str:
         """
         This property will be supplied by 
         the inheriting classes individually.

@@ -4,7 +4,7 @@ from loguru import logger
 
 
 class InterceptHandler(logging.Handler):
-    def emit(self, record):
+    def emit(self, record) -> None:
         level = logger.level(record.levelname).name
         # Find caller from where originated the logged message
         frame, depth = logging.currentframe(), 2

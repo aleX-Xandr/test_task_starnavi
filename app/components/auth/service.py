@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime
 from typing import Tuple
 
 from jose import jwt
@@ -24,7 +24,7 @@ class AuthService:
 
     async def add_auth(self, tx: AsyncSession, auth: Auth) -> Auth:
         return await self._auth_repository.add_auth(tx, auth)
-    
+
     async def get_auth(self, tx: AsyncSession, login: str) -> Auth | None:
         return await self._auth_repository.get_auth(tx, login)
 
@@ -38,17 +38,18 @@ class AuthService:
         if not self._pwd_context.verify(password, auth.hashed_password):
             raise LogicError("Invalid auth credentials")
 
-        expires_delta = timedelta(minutes=self._config.token_expiration_minutes)
+        expires_delta = timedelta(
+            minutes=self._config.token_expiration_minutes
+        )
         data = {
             "auth_id": auth.id,
             "account_id": auth.account_id,
             "scopes": auth.scopes,
         }
         if expires_delta:
-            expire = datetime.now(timezone.utc) + expires_delta
+            expire = datetime.now() + expires_delta
             data["exp"] = expire
         access_token = jwt.encode(
             data, self._config.secret_key, algorithm=self._config.algorithm
         )
         return access_token, self._config.token_expiration_minutes
-

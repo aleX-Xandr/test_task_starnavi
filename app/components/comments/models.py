@@ -5,8 +5,8 @@ from app.components.base.models import Base
 from app.database import UTCNow
 
 
-class Post(Base):
-    __tablename__ = "posts"
+class Comment(Base):
+    __tablename__ = "comments"
 
     id: int | None = Column(
         Integer, primary_key=True, index=True, nullable=False, unique=True
@@ -15,7 +15,11 @@ class Post(Base):
         DateTime, server_default=UTCNow(), nullable=False
     )
     account_hex_id: str = Column(
-        String(32), ForeignKey("accounts.hex_id", ondelete="cascade"), 
+        String(32), ForeignKey("accounts.hex_id"), 
+        nullable=False
+    )
+    post_id: int = Column(
+        Integer, ForeignKey("posts.id", ondelete="cascade"), 
         nullable=False
     )
     text: str = Column(
@@ -26,7 +30,4 @@ class Post(Base):
     )
     banned: bool = Column(
         Boolean, nullable=False, default=False
-    )
-    auto_comment_timeout: int = Column(
-        Integer, nullable=True
     )

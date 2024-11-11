@@ -20,8 +20,10 @@ class AccountRepository:
         return account
     
     @staticmethod
-    async def get_account_by_id(
-        tx: AsyncSession, account_id: Optional[int] = None, account_hex_id: Optional[str] = None
+    async def get_account(
+        tx: AsyncSession,
+        account_id: Optional[int] = None,
+        account_hex_id: Optional[str] = None
     ) -> Account | None:
         q = select(Account)
         if account_id:
@@ -30,4 +32,3 @@ class AccountRepository:
             q = q.where(Account.hex_id == account_hex_id)
         raw = await tx.execute(q)
         return raw.scalar_one_or_none()
-

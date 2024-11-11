@@ -60,5 +60,4 @@ class AccountsAPI:
             auth = await self._auth_service.add_auth(tx, auth)
         return GetAccountResponse(created=True)
 
-
 container.wire(modules=[__name__])
