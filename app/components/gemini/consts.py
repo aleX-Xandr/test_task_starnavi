@@ -18,7 +18,7 @@ PROMPT_TEMPLATE = "You are an AI responsible for moderating posts and "\
     "2. **If the content is free of offensive language**, {not_banned}.\n\n"\
     "Please respond based on the instructions above and analyze "\
     "the following content:"
-    
+
 PROMPT = lambda generate_answer: PROMPT_TEMPLATE.format(
     banned=RESPOND_EXACTLY(PostStatusEnum.BANNED.value),
     not_banned=(
