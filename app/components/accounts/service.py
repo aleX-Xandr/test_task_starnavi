@@ -9,7 +9,11 @@ class AccountService:
     def __init__(self, accounts_repository: AccountRepository):
         self._accounts_repository = accounts_repository
 
-    async def add_account(self, tx: AsyncSession, account: Account) -> Account:
+    async def add_account(
+        self,
+        tx: AsyncSession,
+        account: Account
+    ) -> Account:
         return await self._accounts_repository.add_account(tx, account)
 
     async def get_account(

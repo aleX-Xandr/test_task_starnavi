@@ -63,13 +63,29 @@ class CommentRepository:
         q = (
             select(
                 func.date(Comment.created_at).label("date"),
-                func.sum(case((Comment.banned == False, 1), else_=0)).label("created"),
-                func.sum(case((Comment.banned == True, 1), else_=0)).label("blocked"),
+                func.sum(
+                    case(
+                        (Comment.banned == False, 1),
+                        else_=0
+                    )
+                ).label("created"),
+                func.sum(
+                    case(
+                        (Comment.banned == True, 1),
+                        else_=0
+                    )
+                ).label("blocked"),
             )
-            .where(Comment.created_at >= date_from, Comment.created_at <= date_to)
-            .group_by(func.date(Comment.created_at))
-            .order_by("date")
         )
+        if date_from:
+            q = q.where(
+                Comment.created_at >= date_from
+            )
+        if date_to:
+            q = q.where(
+                Comment.created_at <= date_to
+            )
+        q = q.group_by(func.date(Comment.created_at)).order_by("date")
         raw = await tx.execute(q)
         return raw.mappings().all()
 

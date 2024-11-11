@@ -18,7 +18,9 @@ class TestMixin:
         self.token = await self._get_token(f_auth.login)
 
     async def _get_token(self, login):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as api_client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        ) as api_client:
             resp = await api_client.post(
                 self.TOKEN_API,
                 data={
@@ -44,23 +46,6 @@ class ApiRequests:
             "Authorization": f"Bearer {token}"
         }
 
-    async def call_api(
-            self,
-            method: str,
-            expected_status_code: HTTPStatus = HTTPStatus.OK,
-            extra_headers: Optional[Dict] = None,
-            **kwargs
-    ) -> Response:
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as api_client:
-            resp = await api_client.request(
-                method=method,
-                url=self.API_ENDPOINT,
-                headers=self.headers,
-                **kwargs
-            )
-            assert resp.status_code == expected_status_code, resp.content
-            return resp
-
     async def request(
         self, 
         method: Literal["GET", "POST", "PUT", "DELETE"],
@@ -78,7 +63,11 @@ class ApiRequests:
         else: # ContentTypeEnum.QUERY
             params = kwargs
 
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver", timeout=30) as api_client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://testserver",
+            timeout=30
+        ) as api_client:
             resp = await api_client.request(
                 method=method,
                 url=endpoint or self.API_ENDPOINT,

@@ -220,7 +220,7 @@ class CommentsAPI:
         ),
         account: Account = Scopes(ScopeEnum.COMMENTS_DELETE),
         db_session: Callable = Depends(Provide[Container.db_session]),
-    ) -> GetCommentResponse:
+    ) -> DeleteCommentResponse:
         async with db_session() as tx:
             comment = await self._comments_service.get_comment(
                 tx, comment_id, account.hex_id

@@ -10,11 +10,9 @@ from app.components.auth.consts import ScopeEnum, RolePermissionsEnum, RoleEnum
 from app.configs import AuthConfig
 from app.containers import Container, container
 from app.components.auth.models import Auth
-from app.components.auth.repo import AuthRepository
 from app.components.auth.exceptions import AuthException
 from app.components.accounts.models import Account
 from app.components.accounts.repo import AccountRepository
-
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="auth/token",
@@ -41,25 +39,22 @@ class Scopes(Security):
         use_cache: bool = True,
     ):
         scopes = [scopes] if isinstance(scopes, str) else scopes
-        super().__init__(dependency=check_auth, scopes=scopes, use_cache=use_cache)
+        super().__init__(
+            dependency=check_auth,
+            scopes=scopes,
+            use_cache=use_cache
+        )
 
 @cached(ttl=60 * 5)  # 5 minutes ttl
 async def _get_account_cached(
     account_id: int,
     db_session: Callable = Depends(Provide[Container.db_session]),
-    account_repo: AccountRepository = Depends(Provide[Container.accounts_repository]),
+    account_repo: AccountRepository = Depends(
+        Provide[Container.accounts_repository]
+    ),
 ) -> Account | None:
     async with db_session() as tx:
         return await account_repo.get_account(tx, account_id)
-
-@cached(ttl=60 * 5)  # 5 minutes ttl
-async def _get_auth_cached(
-    account_id: str,
-    db_session: Callable = Depends(Provide[Container.db_session]),
-    auth_repo: AuthRepository = Depends(Provide[Container.auth_repository]),
-) -> Auth | None:
-    async with db_session() as tx:
-        return await auth_repo.get_auth_by_account_id(tx, account_id)
 
 @inject
 async def check_auth(
@@ -73,7 +68,11 @@ async def check_auth(
     if not token:
         raise credentials_exception
     try:
-        payload = jwt.decode(token, config.secret_key, algorithms=[config.algorithm])
+        payload = jwt.decode(
+            token,
+            config.secret_key,
+            algorithms=[config.algorithm]
+        )
     except JWTError:
         raise credentials_exception
     account_id = payload.get("account_id")
@@ -82,21 +81,24 @@ async def check_auth(
     token_scopes = payload.get("scopes")
     if token_scopes is None:
         raise credentials_exception
-    required_scopes_left = {*security_scopes.scopes} - {*token_scopes.split(" ")}
+    required_scopes_left = (
+        {*security_scopes.scopes} - {*token_scopes.split(" ")}
+    )
     is_enough = check_scopes(token_scopes, " ".join(security_scopes.scopes))
     if not is_enough:
         logger.error(
-            f"Not enough permissions: {' '.join(required_scopes_left)} account_id: {account_id}"
+            f"Not enough permissions: {' '.join(required_scopes_left)} " \
+            f"account_id: {account_id}"
         )
         raise AuthException(
-            detail=f"Not enough permissions: {' '.join(required_scopes_left)}",
+            detail=f"Not enough permissions: {' '.join(required_scopes_left)}"
         )
     account = await _get_account_cached(account_id)
     if account is None:
         raise credentials_exception
     return account
 
-def check_scopes(token_scopes: str, required_scopes: str):
+def check_scopes(token_scopes: str, required_scopes: str) -> bool:
     if token_scopes == "*:*":
         return True
     rscopes = required_scopes.split(" ")
@@ -118,7 +120,7 @@ def find_role(auth: Auth) -> RoleEnum:
     for _role in RolePermissionsEnum:
         if auth.scopes == _role.value:
             return RoleEnum[_role.name]
-        return RoleEnum.USER
+    return RoleEnum.USER
 
 
 container.wire(modules=[__name__])

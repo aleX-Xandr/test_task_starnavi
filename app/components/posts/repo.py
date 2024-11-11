@@ -1,4 +1,3 @@
-from datetime import datetime
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select

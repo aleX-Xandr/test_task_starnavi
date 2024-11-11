@@ -160,7 +160,7 @@ class PostsAPI:
         post_id: int = Path(..., title="Unique id that corresponds to post."),
         account: Account = Scopes(ScopeEnum.POSTS_DELETE),
         db_session: Callable = Depends(Provide[Container.db_session]),
-    ) -> GetPostResponse:
+    ) -> DeletePostResponse:
         async with db_session() as tx:
             post = await self._posts_service.get_post(
                 tx, post_id, account.hex_id

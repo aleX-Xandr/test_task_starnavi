@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from typing import AsyncGenerator
 
 from app.components.accounts.endpoints import accounts_router
 from app.components.auth.endpoints import auth_router
@@ -19,7 +20,6 @@ from app.configs import AppConfig
 from app.containers import container, Container
 from app.database import DB
 from app.exceptions import LogicError
-from app.migrations.runner import MigrationRunner
 
 
 @inject
@@ -29,14 +29,15 @@ def setup_app(
     
 ):
     @asynccontextmanager
-    async def lifespan(app: FastAPI):
+    async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         
         engine = create_engine(config.db.master_sync)
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=engine
+        )
         Base.metadata.create_all(bind=engine)
         
         await db.init_db()
-        # await MigrationRunner().upgrade()
         yield
         await db.dispose()
 
@@ -57,25 +58,23 @@ def setup_app(
             allow_headers=["*"],
         )
 
-    @app.middleware("http")
-    async def add_process_time_header(request: Request, call_next):
-        start_time = time.time()
-        response = await call_next(request)
-        process_time = time.time() - start_time
-        response.headers["X-Process-Time"] = str(process_time)
-        return response
-
     @api_v1.exception_handler(Exception)
-    async def debug_exception_handler(_: Request, exc: Exception):
+    async def debug_exception_handler(
+        _: Request, exc: Exception
+    ) -> JSONResponse:
         logger.exception(exc)
-        return JSONResponse({"error": "Internal server error"}, status_code=500)
+        return JSONResponse({
+            "error": "Internal server error"},
+            status_code=500
+        )
 
     @api_v1.exception_handler(LogicError)
-    async def validation_exception_handler(_: Request, exc: LogicError):
+    async def validation_exception_handler(
+        _: Request, exc: LogicError
+    ) -> JSONResponse:
         logger.exception(exc)
         return JSONResponse({"error": str(exc)}, status_code=400)
 
     return app
-
 
 container.wire(modules=[__name__])

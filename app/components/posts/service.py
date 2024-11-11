@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import Optional, List
 
@@ -14,8 +13,15 @@ class PostService:
     async def add_post(self, tx: AsyncSession, post: Post) -> Post:
         return await self._posts_repository.add_post(tx, post)
 
-    async def get_post(self, tx: AsyncSession, post_id: int, owner_hex_id: Optional[str] = None) -> Post | None:
-        return await self._posts_repository.get_post(tx, post_id, owner_hex_id)        
+    async def get_post(
+        self,
+        tx: AsyncSession,
+        post_id: int,
+        owner_hex_id: Optional[str] = None
+    ) -> Post | None:
+        return await self._posts_repository.get_post(
+            tx, post_id, owner_hex_id
+        )
 
     async def get_posts(
         self, 

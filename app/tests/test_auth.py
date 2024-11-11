@@ -21,8 +21,8 @@ class TestAuth(TestMixin):
 
         # validate token creation
         resp = await api.create(
-            username=f_account.login, 
+            username=f_account.login,
             password=PASSWORD
         )
         assert isinstance(resp.get("access_token"), str), resp
-        assert resp.get("role") == RoleEnum.USER.value, resp
+        assert resp.get("role") == RoleEnum.ADMIN.value, resp

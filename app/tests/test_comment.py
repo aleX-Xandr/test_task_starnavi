@@ -47,8 +47,8 @@ class TestComment(TestMixin):
         assert new_comment.get("text") == new_text, new_comment
 
         # get comment daily breakdown
-        date_to = datetime.now()
-        date_from = date_to - timedelta(days = 3)
+        date_to = datetime.now() + timedelta(days=1)
+        date_from = date_to - timedelta(days=3)
         breakdown = await api.get(
             endpoint=f"/api/v1/comments-daily-breakdown",
             date_from=date_from.strftime("%Y-%m-%d"),
@@ -86,5 +86,3 @@ class TestComment(TestMixin):
             expected_status_code=HTTPStatus.BAD_REQUEST
         )
         assert del_comment.get("error") == "Comment not found", del_comment
-
-        

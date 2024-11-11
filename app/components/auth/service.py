@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime
 from typing import Tuple
 
 from jose import jwt
@@ -38,7 +38,9 @@ class AuthService:
         if not self._pwd_context.verify(password, auth.hashed_password):
             raise LogicError("Invalid auth credentials")
 
-        expires_delta = timedelta(minutes=self._config.token_expiration_minutes)
+        expires_delta = timedelta(
+            minutes=self._config.token_expiration_minutes
+        )
         data = {
             "auth_id": auth.id,
             "account_id": auth.account_id,

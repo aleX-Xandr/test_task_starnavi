@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.components.posts.models import Post
 from app.tests.base import CommentAPI, TestMixin
-from app.tests.consts import ContentTypeEnum
+from app.tests.consts import ContentTypeEnum, TEXT, BAD_TEXT
 from app.tests.fixtures import f
 
 
@@ -20,17 +20,14 @@ class TestAutoComment(TestMixin):
         await f_session.refresh(f_post_auto_reply)
 
         api = CommentAPI(token=self.token)
-        # Meaningful text is required for correct testing
-        text = "Today I'm going to the Leonardo da Vinci Museum."
-        bad_text = "Today I'm going to suck a dick."
 
         # create comment
         comment = await api.create(
-            text=text, 
+            text=TEXT, 
             post_id=f_post_auto_reply.id, 
             content_type=ContentTypeEnum.JSON
         )
-        assert comment.get("text") == text, comment
+        assert comment.get("text") == TEXT, comment
         comment_id = comment.get("id")
 
         # get all comments
@@ -41,8 +38,6 @@ class TestAutoComment(TestMixin):
         comments = resp.get("comments", None)
         assert isinstance(comments, list), resp
         assert len(comments) == 1, resp
-
-        # asyncio.sleep(60)
 
         # get all comments after auto reply 
         max_attempts = 3
@@ -61,7 +56,7 @@ class TestAutoComment(TestMixin):
 
         # create bad comment
         comment = await api.create(
-            text=bad_text, 
+            text=BAD_TEXT, 
             post_id=f_post_auto_reply.id, 
             content_type=ContentTypeEnum.JSON,
             expected_status_code=HTTPStatus.BAD_REQUEST
@@ -80,7 +75,7 @@ class TestAutoComment(TestMixin):
         # update good comment to make it bad
         new_comment = await api.update(
             comment_id=comment_id, 
-            text=bad_text,
+            text=BAD_TEXT,
             expected_status_code=HTTPStatus.BAD_REQUEST
         )
         assert new_comment.get("error") == "Comment was banned!", comment

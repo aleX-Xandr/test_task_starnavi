@@ -1,8 +1,8 @@
 from httpx import AsyncClient
-from typing import Tuple
+from typing import Tuple, Any
 
 from app.components.comments.models import Comment
-from app.components.gemini.consts import DeepDictList, PROMPT, PostStatusEnum
+from app.components.gemini.consts import PROMPT, PostStatusEnum
 from app.components.posts.models import Post
 from app.configs import GeminiConfig
 
@@ -28,7 +28,7 @@ class GeminiService: # TODO response status and tokens limit checker
         self,
         text: str, 
         generate_answer: bool = False
-    ) -> DeepDictList:
+    ) -> dict[str, Any]:
         return {
             "contents": [
                 {
@@ -60,7 +60,9 @@ class GeminiService: # TODO response status and tokens limit checker
                     "threshold": "BLOCK_NONE"
                 },
             ],
-            "generationConfig": self._config.generation_config.model_dump(mode="json")
+            "generationConfig": self._config.generation_config.model_dump(
+                mode="json"
+            )
         }
     
     @staticmethod
@@ -73,7 +75,7 @@ class GeminiService: # TODO response status and tokens limit checker
             return False, ""
         return True, analyze_result
 
-    async def call_api(self, payload: DeepDictList) -> dict:
+    async def call_api(self, payload: dict[str, Any]) -> dict:
         async with AsyncClient(headers=self.headers, timeout=30) as client:
             response = await client.post(self.api_endpoint, json=payload)
             return response.json()
