@@ -1,5 +1,3 @@
-import time
-
 from contextlib import asynccontextmanager
 from dependency_injector.wiring import inject, Provide
 from fastapi import FastAPI
