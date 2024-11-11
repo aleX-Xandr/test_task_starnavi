@@ -22,11 +22,3 @@ class AuthRepository:
         q = select(Auth).where(Auth.login == login)
         raw = await tx.execute(q)
         return raw.scalar_one_or_none()
-
-    @staticmethod
-    async def get_auth_by_account_id(
-        tx: AsyncSession, account_id: str
-    ) -> Auth | None:
-        q = select(Auth).where(Auth.account_id == account_id)
-        raw = await tx.execute(q)
-        return raw.scalar_one_or_none()
